@@ -1,0 +1,57 @@
+/* World Populations SQL Practice-Codecademy 
+Code by Faith Lierheimer
+From "World Populations" database provided by Codecademy, from World Populations II Challenge Project */
+
+/* How many entries in the countries table are from Africa? */
+SELECT COUNT(*) AS '# African Countries'
+FROM countries
+WHERE continent = 'Africa';
+
+/*What was the total population of Oceania in 2005? */
+SELECT countries.id AS 'Country ID', ROUND(SUM(population_years.population), 2) AS
+  'Population in Millions'
+FROM countries
+LEFT JOIN population_years
+  ON population_years.country_id = countries.id
+  WHERE year = 2005
+  AND continent = 'Oceania';
+
+/* What is the average population of countries in South America in 2003? */
+SELECT countries.continent AS 'Continent', ROUND(AVG(population_years.population), 2) AS 'Population in Millions'
+FROM countries
+LEFT JOIN population_years
+  ON population_years.country_id = countries.id
+  GROUP BY countries.continent
+  HAVING countries.continent = "South America";
+
+/*What country had the smallest population in 2007?*/
+SELECT countries.name AS 'Countries', ROUND(population_years.population, 2) AS 'Population in Millions'
+FROM countries
+LEFT JOIN population_years
+  ON population_years.country_id = countries.id
+  GROUP BY countries.name
+  HAVING population_years.year = 2007
+  ORDER BY population_years.population ASC
+  LIMIT 1;
+
+/*What is the average population of Poland during the time period covered by this dataset? */
+SELECT countries.name AS 'Countries', ROUND(AVG(population_years.population),2) AS 'Population in Millions'
+FROM countries
+LEFT JOIN population_years
+  ON population_years.country_id = countries.id
+  GROUP BY countries.name
+  HAVING countries.name = 'Poland';
+
+/*How many countries have the word "The" in their name? */
+SELECT name AS 'Countries w/"The" in Name', COUNT(name) AS "# of Countries"
+FROM countries
+GROUP BY name
+HAVING name LIKE "%the%";
+
+/*What was the total population of each continent in 2010?*/
+SELECT countries.continent AS 'Continent', ROUND(SUM(population_years.population),2) AS 'Population in Millions'
+FROM countries
+LEFT JOIN population_years
+  ON population_years.country_id = countries.id
+GROUP BY countries.continent
+HAVING population_years.year = 2010;
