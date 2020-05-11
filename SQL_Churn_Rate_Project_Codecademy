@@ -1,0 +1,109 @@
+/*User Churn--Codeflix Project, from Codecademy Data Science Path.
+ Code by Faith Lierheimer
+n.b.: Code contains several individual SQL queries that were run separately to avoid confusion, but are 
+all included in this final code write-up for completeness's sake. */
+
+/*Part 1: Exploratory Queries */
+/*Explore first 100 rows of data, how many different segments are there? (Answer: two, 87 and 30 ) */
+SELECT * 
+FROM subscriptions
+LIMIT 100;
+/*Explore subscription starts and ends--what's the earliest and 
+latest subscription starts and ends in the table? 
+(Earliest start: 2016-12-01, latest start: 2017-03-30.
+ Earliest end: 2017-01-01, Latest end: 2017-03-31) */
+SELECT * 
+FROM subscriptions
+ORDER BY subscription_start ASC
+LIMIT 10; 
+SELECT * 
+FROM subscriptions
+ORDER BY subscription_start DESC
+LIMIT 10;
+SELECT * 
+FROM subscriptions 
+ORDER BY subscription_end DESC;
+ /*Exploratory queries also reveal data range--Months we are calculating churn for are Dec 2016, and Jan-March 2017. 4 months total in data set, but range is just 3 months, 
+Jan-March 2017 bc no cancellations in Dec due to minimum subscription length of 1 month. */
+
+/*Part Two: Create a temporary table using UNION fxn called "months" in order to more easily access the first and last day of the month for churn calculations. */
+WITH months AS 
+(
+  SELECT
+  '2017-01-01' AS first_day,
+  '2017-01-31' AS last_day
+  UNION
+  SELECT 
+  '2017-02-01' AS first_day,
+  '2017-02-28' AS last_day
+  UNION
+  SELECT
+  '2017-03-01' AS first_day,
+  '2017-03-31' AS last_day
+),
+
+/*Part Three: Cross join the orignal "subscriptions" data
+ table given by the ficticious company and the "months" table I just made so I can compare existing subscription data across all 3 relevant months more easily. Name new table "cross_join". 
+Don't need a separate "WITH" statement as the comma at the end of the last code chunk lets this temporary table fall under the same "WITH". Holds true for all temporary tables in this code. */
+cross_join AS
+(
+  SELECT * 
+FROM subscriptions
+CROSS JOIN months
+),
+
+/*Part Four: create another temporary table that calculates whether users from each segment (87 and 30) are active using CASE/WHEN logic, and whether the users from each segment have canceled.The "is_active" column for each segment will have a 1 if the user existed prior to the beginning of a given month, and will have a 0 otherwise. The "is_canceled" column will have a 1 if the user canceled during a given month and a 0 otherwise.*/
+status AS 
+(
+SELECT id, first_day AS month,
+CASE
+  WHEN (segment = 87)
+  AND (subscription_start < first_day)
+  AND (
+    subscription_end > first_day
+    OR subscription_end IS NULL
+  )
+  THEN 1
+  ELSE 0
+  END AS is_active_87,
+CASE
+  WHEN (segment = 30)
+  AND (subscription_start < first_day)
+  AND (
+    subscription_end > first_day
+    OR subscription_end IS NULL
+  )
+  THEN 1
+  ELSE 0
+  END AS is_active_30,
+CASE
+  WHEN (segment = 87)
+  AND subscription_end BETWEEN first_day AND last_day THEN 1
+  ELSE 0
+END AS is_canceled_87,
+CASE
+  WHEN (segment = 30)
+  AND subscription_end BETWEEN first_day AND last_day THEN 1
+  ELSE 0
+END AS is_canceled_30
+FROM cross_join),
+
+/*Part Five: create another temporary table that adds up the active and canceled subscriptions for each segment, for each month. Call the table "status_aggregate"*/
+status_aggregate AS
+(
+  SELECT month,
+  SUM(is_active_87) AS sum_active_87,
+  SUM(is_active_30) AS sum_active_30,
+  SUM(is_canceled_87) AS sum_canceled_87,
+  SUM(is_canceled_30) AS sum_canceled_30
+  FROM status
+  GROUP BY month
+)
+
+/*Part Six: Calculate the churn rates for the two segments over the three month period. Which segment has a lower churn rate? (answer: The 30 segment. No churn rate gets above 0.15.) */
+SELECT
+month,
+ROUND(1.0 * sum_canceled_87/sum_active_87, 2) AS churn_rate_87,
+ROUND(1.0 * sum_canceled_30/sum_active_30, 2) AS churn_rate_30
+FROM status_aggregate;
+
