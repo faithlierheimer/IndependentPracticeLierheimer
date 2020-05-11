@@ -1,0 +1,129 @@
+/*Codecademy Marketing Attribution Mini-Project: 
+CoolTShirts Attribution Queries.
+Code by Faith Lierheimer *\
+/* ***PART 1: Exploratory Queries*** *\
+
+/*Explore general data structure *\
+SELECT *
+FROM page_visits
+LIMIT 10;
+
+/*Find out how many distinct utm_campaigns the company uses*\
+SELECT DISTINCT utm_campaign
+FROM page_visits;
+/*Above query shows 8 distinct campaigns used by company. *\
+
+/*Find out how many distinct utm_sources the company uses. *\
+SELECT DISTINCT utm_source
+FROM page_visits;
+/*Above query shows 6 distinct utm_sources used by the company. *\
+
+/*Identify the pages on the company website*\
+SELECT DISTINCT page_name
+FROM page_visits;
+/*Pages are landing_page, shopping_cart, checkout, and purchase*\
+
+
+/* ***PART 2: Identifying First and Last Touch Metrics*** *\
+
+/* How many first touches is each campaign responsible for? *\
+WITH first_touch AS 
+(
+  SELECT user_id,
+  MIN(timestamp) as first_touch_at
+  FROM page_visits
+  GROUP BY user_id
+), ft_attr AS (
+SELECT ft.user_id,
+ft.first_touch_at,
+pv.utm_source,
+pv.utm_campaign
+FROM first_touch AS ft
+JOIN page_visits AS pv
+ON ft.user_id = pv.user_id
+AND ft.first_touch_at =
+pv.timestamp)
+
+SELECT ft_attr.utm_source,
+ft_attr.utm_campaign, COUNT(*)
+FROM ft_attr
+GROUP BY 1,2
+ORDER BY 3 DESC; 
+/*Above code tells us the medium interview with the founder got 622 first touches, the NYtimes 
+piece got 612, the buzzfeed article got 576, and the google search got 169. *\
+
+/* How many last touches is each campaign responsible for? *\
+
+WITH last_touch AS 
+(
+  SELECT user_id,
+  MAX(timestamp) as last_touch_at
+  FROM page_visits
+  GROUP BY user_id
+), lt_attr AS (
+SELECT lt.user_id,
+lt.last_touch_at,
+pv.utm_source,
+pv.utm_campaign
+FROM last_touch AS lt
+JOIN page_visits AS pv
+ON lt.user_id = pv.user_id
+AND lt.last_touch_at =
+pv.timestamp)
+
+SELECT lt_attr.utm_source,
+lt_attr.utm_campaign, COUNT(*)
+FROM lt_attr
+GROUP BY 1,2
+ORDER BY 3 DESC; 
+
+
+/* ***PART 3: User Journey: Purchases and Last Touches *** *\
+/* How many distinct visitors make a purchase?*\
+SELECT COUNT(DISTINCT user_id)
+FROM page_visits
+WHERE page_name = '4 - purchase';
+/*361 distinct users have made a purchase!*\
+
+
+/* How many last-touches ON THE PURCHASE PAGE is each campaign responsible for? *\
+WITH last_touch_purchase AS 
+(
+  SELECT user_id,
+  MAX(timestamp) as last_touch_at
+  FROM page_visits
+  WHERE page_name = '4 - purchase'
+  GROUP BY user_id
+), ltp_attr AS (
+SELECT ltp.user_id,
+ltp.last_touch_at,
+pv.utm_source,
+pv.utm_campaign
+FROM last_touch_purchase AS ltp
+JOIN page_visits AS pv
+ON ltp.user_id = pv.user_id
+AND ltp.last_touch_at =
+pv.timestamp)
+
+SELECT ltp_attr.utm_source,
+ltp_attr.utm_campaign, COUNT(*)
+FROM ltp_attr
+GROUP BY 1,2
+ORDER BY 3 DESC;
+
+/*Result tells us email newsletter and Facebook retargetting ad get the
+most last touches on the purchase page at 115 and 113 respectively, with the email
+retargetting campaign and the paid search coming in at 54 and 52 respectively.*\
+
+/*So, which campaigns should they reinvest in, if they can only pick 5?
+The weekly newsletter and the facebook retargetting ads account for 2/3
+of the last touches that lead to a purchase, so those are the obvious 
+first two choices. The media coverage in Medium and NYTimes resulted in
+over 600 first touches each, so those are also good candidates for 
+reinvestment if other media coverage is possible. Finally, the buzzfeed 
+article about Cool T Shirts resulted in over 500 first touches,
+and makes the most sense as a 5th reinvestment given that the other last touch
+sources that got a purchase were under 100 each, it makes more sense to invest in
+a high volume first touch source. *\
+
+
