@@ -1,0 +1,45 @@
+#Python Mini-Project: Sal's Shipping
+#Objective: write several functions that calculate the cost of different methods of shipping given an inputted weight as a parameter, then write a final function that determines the cheapest shipping option and final cost given an inputted weight. 
+#Project provided by Codecademy Pro Data Science Pathway
+#Original code by Faith Lierheimer
+
+#Part I: Define a function that calculates the cost of ground shipping based on the weight of a package and the associated flat charge. 
+def ground_shipping(weight):
+  if weight <= 2:
+    return weight*1.5 + 20
+  elif weight > 2 and weight <= 6:
+    return weight*3.0 + 20
+  elif weight > 6 and weight <= 10:
+    return weight *4.0 + 20
+  else:
+    return weight*4.75 + 20
+#Test function
+print(ground_shipping(8.4))
+
+#Part II: Define flat cost of premium ground shipping as a variable to use for later.
+premium_ground_shipping = 125.0
+
+#Part III: Define a function that calculates the cost of drone shipping based on the weight of a package. No associated flat charge here.
+def drone_shipping(weight):
+  if weight <= 2:
+    return weight*4.50
+  elif weight > 2 and weight <= 6:
+    return weight*9.0
+  elif weight > 6 and weight <= 10:
+    return weight * 12.0
+  else:
+    return weight * 14.25
+print(drone_shipping(1.5))
+
+#Part IV: Define a function that uses the previous defined functions to determine the cheapest shipping option for an object of a given weight, and returns the cheapest option and the shipping price. 
+def cheapest_option(weight):
+  if ground_shipping(weight) < drone_shipping(weight) and ground_shipping(weight) < premium_ground_shipping:
+    return "Ground shipping is your cheapest option. It costs $" + str(ground_shipping(weight))
+  elif drone_shipping(weight) < ground_shipping(weight) and drone_shipping(weight)< premium_ground_shipping:
+    return "Drone shipping is your cheapest option. It costs $" + str(drone_shipping(weight))
+  else:
+    return "Premium ground shipping is your cheapest option. It costs $" + str(premium_ground_shipping)
+#Test Part IV function with a package that weights 4.8 lbs.
+print(cheapest_option(4.8))
+
+### end mini project ##
