@@ -1,0 +1,52 @@
+#Len's Slice Mini Project--Python 
+#Project Provided by Codecademy Pro 
+#Original Code by Faith Lierheimer
+#Date Completed: 5/24/2020
+
+#Task 1: Keep track of all the kinds of pizzas we sell with a list called 'toppings'!
+
+toppings = ['pepperoni', 'pineapple', 'cheese', 'sausage', 'olives', 'anchovies', 'mushrooms']
+
+#Task 2: Keep track of how much each kind of pizza slice costs with a list called 'prices'!
+
+prices = [2, 6, 1, 3, 2, 7, 2]
+
+#Task 3: Find the length of the 'toppings' list and store it in a variable called num_pizzas. 
+
+num_pizzas = len(toppings)
+print(num_pizzas)
+
+#Task 4: Print how many different kinds of pizza we sell! 
+print("We sell " + str(num_pizzas), "different kinds of pizza!")
+
+#Task 5: Use zip to combine the above two lists into a list called pizzas with price first. 
+
+pizzas = list(zip(prices, toppings))
+
+print(pizzas)
+
+#Task 6: Sort 'pizzas' so the pizzas with the lowest price are at the start of the list. 
+
+pizzas.sort()
+print(pizzas)
+
+#Task 7: Store the first element of pizzas in a variable called cheapest_pizza. 
+
+cheapest_pizza = pizzas[0]
+print(cheapest_pizza)
+
+#Task 8: Store the last element of pizzas in a variable called priciest_pizza. 
+
+priciest_pizza = pizzas[-1]
+print(priciest_pizza)
+
+#Task 9: Store & print the three lowest cost pizzas in a list called three_cheapest. 
+
+three_cheapest = pizzas[0:3]
+print(three_cheapest)
+
+#Task 10: Count the number of occurrences of $2 pizzas in the prices list, and store the result in a variable called num_two_dollar_slices. Print it. 
+
+num_two_dollar_slices = prices.count(2)
+
+print(num_two_dollar_slices)
