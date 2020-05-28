@@ -1,0 +1,56 @@
+#Codecademy Mini-Project 
+#Python: Managing Store Inventory
+#Skills required: reading and manipulating CSVs including adding and changing column names and performing column calculations using lambda functions. 
+#Original code by Faith Lierheimer
+import codecademylib
+import pandas as pd
+#Load data into DataFrame called 'inventory'
+
+inventory = pd.read_csv('inventory.csv')
+
+#Inspect the first 10 rows of 'inventory'
+
+print(inventory.head(10))
+
+#Save the first 10 rows to a new DataFrame
+
+staten_island = inventory.iloc[0:10]
+print(staten_island)
+
+#Select column product_description from staten_island and save it to variable product_request. 
+
+product_request = staten_island['product_description']
+
+print(product_request)
+
+#Create a new variable called seed_request that shows all the seeds sold at the Brooklyn location. 
+
+seed_request = inventory[(inventory.location == 'Brooklyn') & (inventory.product_type == 'seeds')] 
+
+print(seed_request)
+
+#Add a column to inventory called in_stock which is True if quantity > 0 and False if quantity = 0. 
+
+in_stock = lambda x: True if x > 0 else False
+
+inventory['in_stock'] = inventory.quantity.apply(in_stock)
+
+print(inventory)
+
+#Create a column called total_value that is price * quantity, add it to inventory DataFrame
+
+inventory['total_value'] = inventory.price * inventory.quantity
+
+print(inventory.head())
+
+#Combine product_type and product_description into a single string. 
+
+combine_lambda = lambda row: \
+    '{} - {}'.format(row.product_type,
+                     row.product_description)
+
+#Make a new column in inventory that has a complete description of each product.
+
+inventory['full_description'] = inventory.apply(combine_lambda, axis = 1)
+
+print(inventory.head())
