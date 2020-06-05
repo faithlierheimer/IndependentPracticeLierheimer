@@ -1,0 +1,115 @@
+#Aggregates in Pandas: Python Project from Codecademy Pro 
+
+#Goal: Explore an ad_clicks DataFrame for a fictional company, analyze A/B testing data to determine which was most effective. 
+
+#Skills used: modifying DataFrames with Pandas including renaming columns, adding columns, adding columns based on calculations including lambda functions, creating new DataFrames from old ones, and pivoting data frames to better meet analysis needs. 
+
+#Original code by Faith Lierheimer
+import codecademylib
+import pandas as pd
+
+ad_clicks = pd.read_csv('ad_clicks.csv')
+
+#Explore data 
+print(ad_clicks.head())
+
+#Which ad platform is getting the most views? i.e., how many views came from each utm_source? 
+
+views_by_UTMSource = ad_clicks.groupby('utm_source').user_id.count().reset_index()
+
+views_by_UTMSource.rename(columns = {"user_id": "views"}, inplace = True)
+
+print(views_by_UTMSource.head())
+
+#Create a new column called is_click, which is True if ad_click_timestamp is not null and False otherwise
+ad_clicks['is_click'] = ~ ad_clicks.ad_click_timestamp.isnull()
+
+print(ad_clicks.head())
+
+#Find out the percentage of people who clicked on ads from each utm_source
+
+clicks_by_source = ad_clicks.groupby(['utm_source', 'is_click']).user_id.count().reset_index()
+
+clicks_by_source.rename(columns = {"user_id": "click_count"}, inplace = True)
+
+print(clicks_by_source.head())
+
+#Pivot the data so that the columns are is_click (either true or false), index is utm_source, and values are user_id. 
+
+clicks_pivot = clicks_by_source.pivot(columns = "is_click", index = "utm_source", values = "click_count")
+
+print(clicks_pivot.head())
+
+#Create a new column in clicks_pivot called percent_clicked which is equal to the percent of users that clicked on the ad from each utm_source.
+
+#rename columns first
+clicks_pivot.columns = ["no_click", "click"]
+
+print(clicks_pivot.head())
+
+clicks_pivot["percent_clicked"] = clicks_pivot["click"]/ (clicks_pivot["click"] + clicks_pivot["no_click"])
+
+print(clicks_pivot.head())
+
+#Count the number of users shown Ad A vs Ad B
+percentA = ad_clicks.groupby('experimental_group').user_id.count().reset_index()
+
+print(percentA.head())
+
+#Using the column is_click, check to see if a greater percentage of users clicked on Ad A or Ad B. 
+
+AorB = ad_clicks.groupby(['experimental_group', 'is_click']).user_id.count().reset_index()
+
+print(AorB.head())
+
+#Pivot the A or B table
+AorB_pivoted = AorB.pivot(columns = "is_click", index = "experimental_group", values = "user_id")
+
+print(AorB_pivoted.head())
+
+AorB_pivoted['percent_click'] = AorB_pivoted[True]/(AorB_pivoted[False] + AorB_pivoted[True])
+
+print(AorB_pivoted.head())
+
+#Make two DataFrames, a_clicks and b_clicks, which contain only the results for A group and B group, respectively. 
+
+a_clicks = ad_clicks[ad_clicks.experimental_group == 'A']
+
+print(a_clicks.head())
+
+print(type(a_clicks))
+
+b_clicks = ad_clicks[ad_clicks.experimental_group == 'B']
+
+print(b_clicks.head())
+
+print(type(b_clicks))
+
+#For each group, a_clicks and b_clicks, calculate the percent of users who clicked on the ad by day. 
+
+a_clicks_by_day = a_clicks.groupby(['day', 'is_click']).user_id.count().reset_index()
+
+print(a_clicks_by_day.head())
+
+a_clicks_by_day_pivoted = a_clicks_by_day.pivot(columns = 'is_click', index = 'day', values = 'user_id')
+
+print(a_clicks_by_day_pivoted.head())
+
+a_clicks_by_day_pivoted['percent_clicked'] = a_clicks_by_day_pivoted[True]/(a_clicks_by_day_pivoted[True] + a_clicks_by_day_pivoted[False])
+
+print(a_clicks_by_day_pivoted.head())
+
+b_clicks_by_day = b_clicks.groupby(['day', 'is_click']).user_id.count().reset_index()
+
+print(b_clicks_by_day.head())
+
+b_clicks_by_day_pivoted = b_clicks_by_day.pivot(columns = 'is_click', index = 'day', values = 'user_id')
+
+print(b_clicks_by_day_pivoted.head())
+
+b_clicks_by_day_pivoted['percent_clicked'] = b_clicks_by_day_pivoted[True]/(b_clicks_by_day_pivoted[True] + b_clicks_by_day_pivoted[False])
+
+print(b_clicks_by_day_pivoted.head())
+
+#Following data exploration, Ad group A has the most involvement day over day, with the percent_clicked being at just over 40% on Thursday for ad group A. Ad group B never gets over 40%, the closest they come is Fridays and the click percentage is around 29.6% 
+
